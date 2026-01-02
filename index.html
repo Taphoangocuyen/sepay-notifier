@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sepay Voice Notifier - Google TTS</title>
+    <title>Sepay Voice Notifier</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen p-8">
@@ -19,7 +19,7 @@
                     </div>
                     <div>
                         <h1 class="text-3xl font-bold text-gray-800">Sepay Voice Notifier</h1>
-                        <p class="text-gray-500">Giọng nói tiếng Việt với Google Translate</p>
+                        <p class="text-gray-500">Giọng nói tiếng Việt - Render Cloud</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
@@ -49,7 +49,7 @@
                     <div class="space-y-4">
                         <div class="bg-green-50 border-l-4 border-green-400 p-4">
                             <p class="text-sm font-semibold text-green-800 mb-1">✅ Giọng nói tiếng Việt</p>
-                            <p class="text-xs text-green-700">Sử dụng Google Translate TTS - Không cần cài đặt!</p>
+                            <p class="text-xs text-green-700">Google Translate TTS - Đọc số bằng chữ</p>
                         </div>
 
                         <div>
@@ -70,11 +70,12 @@
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                URL Backend Server
+                                URL Render Server
                             </label>
-                            <input type="text" id="serverUrl" value="http://localhost:3000" 
-                                   placeholder="http://localhost:3000"
+                            <input type="text" id="serverUrl" value="https://sepay-notifier.onrender.com" 
+                                   placeholder="https://sepay-notifier.onrender.com"
                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                            <p class="text-xs text-gray-500 mt-1">Thay YOUR-APP bằng tên app của bạn</p>
                         </div>
 
                         <button onclick="testVoice()" 
@@ -94,6 +95,9 @@
                             <code id="webhookUrl" class="block text-sm text-gray-600 break-all bg-gray-50 p-3 rounded">
                                 Chưa có (Khởi động server trước)
                             </code>
+                            <button onclick="copyWebhookUrl()" class="mt-2 text-xs text-indigo-600 hover:text-indigo-700 font-medium">
+                                📋 Copy URL
+                            </button>
                         </div>
 
                         <div class="bg-white rounded-lg p-4 border border-green-200">
@@ -101,12 +105,22 @@
                             <p id="wsStatus" class="text-sm text-gray-600">⚪ Chưa kết nối</p>
                         </div>
 
+                        <div class="bg-blue-50 border-l-4 border-blue-400 p-4">
+                            <p class="text-sm font-semibold text-blue-800 mb-2">☁️ Render Cloud:</p>
+                            <ul class="text-xs text-blue-700 space-y-1">
+                                <li>✅ Server chạy 24/7 trên cloud</li>
+                                <li>✅ Không cần máy tính bật</li>
+                                <li>⚠️ Lần đầu kết nối có thể chậm (30s)</li>
+                                <li>💡 WebSocket: wss://</li>
+                            </ul>
+                        </div>
+
                         <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
                             <p class="text-sm font-semibold text-yellow-800 mb-2">📝 Hướng dẫn:</p>
                             <ol class="text-xs text-yellow-700 space-y-1 list-decimal list-inside">
-                                <li>Chạy server: <code class="bg-yellow-100 px-1">node server.js</code></li>
-                                <li>Nhấn "Bắt đầu" ở trên</li>
-                                <li>Test giọng đọc tiếng Việt</li>
+                                <li>Đảm bảo server đã deploy trên Render</li>
+                                <li>Nhập đúng URL Render ở trên</li>
+                                <li>Nhấn "Bắt đầu"</li>
                                 <li>Copy Webhook URL vào Sepay</li>
                                 <li>Giữ tab này mở</li>
                             </ol>
@@ -136,13 +150,14 @@
         </div>
 
         <!-- Info Banner -->
-        <div class="mt-8 bg-blue-50 border-l-4 border-blue-400 p-6 rounded-lg">
-            <h3 class="font-semibold text-blue-800 mb-2">💡 Về giọng đọc Google Translate</h3>
-            <ul class="text-sm text-blue-700 space-y-1">
-                <li>✅ Giọng nói tiếng Việt tự nhiên, không cần cài đặt</li>
-                <li>✅ Hoạt động trên mọi trình duyệt và hệ điều hành</li>
-                <li>✅ Cần kết nối internet để phát giọng nói</li>
-                <li>⚠️ Có độ trễ nhỏ khi tải audio từ Google (1-2 giây)</li>
+        <div class="mt-8 bg-indigo-50 border-l-4 border-indigo-400 p-6 rounded-lg">
+            <h3 class="font-semibold text-indigo-800 mb-2">🚀 Deploy trên Render</h3>
+            <ul class="text-sm text-indigo-700 space-y-1">
+                <li>✅ Server chạy trên cloud miễn phí</li>
+                <li>✅ Không cần máy tính bật</li>
+                <li>✅ URL cố định, không thay đổi</li>
+                <li>⚠️ Free plan: Server ngủ sau 15 phút không dùng</li>
+                <li>💡 Khi có webhook mới, server tự thức dậy (chậm 30-60s)</li>
             </ul>
         </div>
     </div>
@@ -151,8 +166,8 @@
         let ws = null;
         let isConnected = false;
         let transactions = [];
-        let audioQueue = [];
-        let isPlaying = false;
+        let reconnectAttempts = 0;
+        const MAX_RECONNECT_ATTEMPTS = 5;
 
         // Volume and rate sliders
         document.getElementById('volumeSlider').addEventListener('input', (e) => {
@@ -246,27 +261,21 @@
             const volume = document.getElementById('volumeSlider').value / 100;
             const rate = parseFloat(document.getElementById('rateSlider').value);
             
-            // Encode text for URL
             const encodedText = encodeURIComponent(text);
-            
-            // Google Translate TTS URL
             const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=vi&client=tw-ob&q=${encodedText}`;
             
-            // Create and play audio
             const audio = new Audio(audioUrl);
             audio.volume = volume;
             audio.playbackRate = rate;
             
             audio.play().catch(error => {
                 console.error('Lỗi phát giọng nói:', error);
-                // Fallback: Try with browser TTS
                 fallbackSpeak(text);
             });
             
             return audio;
         }
 
-        // Fallback to browser TTS if Google fails
         function fallbackSpeak(text) {
             if ('speechSynthesis' in window) {
                 const utterance = new SpeechSynthesisUtterance(text);
@@ -281,6 +290,15 @@
             speakVietnamese('Bạn vừa nhận được số tiền năm trăm ngàn đồng');
         }
 
+        function copyWebhookUrl() {
+            const url = document.getElementById('webhookUrl').textContent;
+            navigator.clipboard.writeText(url).then(() => {
+                alert('✅ Đã copy Webhook URL!');
+            }).catch(err => {
+                console.error('Lỗi copy:', err);
+            });
+        }
+
         function toggleConnection() {
             if (isConnected) {
                 disconnect();
@@ -290,37 +308,71 @@
         }
 
         function connect() {
-            const serverUrl = document.getElementById('serverUrl').value;
-            const wsUrl = serverUrl.replace('http://', 'ws://').replace('https://', 'wss://').replace(':3000', ':8080');
+            const serverUrl = document.getElementById('serverUrl').value.trim();
             
-            ws = new WebSocket(wsUrl);
+            if (!serverUrl) {
+                alert('Vui lòng nhập URL Render server');
+                return;
+            }
             
-            ws.onopen = () => {
-                isConnected = true;
-                updateStatus('connected');
-                document.getElementById('wsStatus').textContent = '🟢 Đã kết nối';
-                document.getElementById('webhookUrl').textContent = serverUrl + '/webhook';
-                speakVietnamese('Đã kết nối thành công');
-            };
+            // Chuyển https:// thành wss:// cho WebSocket
+            const wsUrl = serverUrl.replace('https://', 'wss://').replace('http://', 'ws://');
             
-            ws.onmessage = (event) => {
-                const message = JSON.parse(event.data);
-                if (message.type === 'transaction') {
-                    handleTransaction(message.data);
-                }
-            };
+            console.log('Đang kết nối đến:', wsUrl);
+            updateStatus('connecting');
+            document.getElementById('wsStatus').textContent = '🟡 Đang kết nối...';
             
-            ws.onerror = (error) => {
-                console.error('WebSocket error:', error);
+            try {
+                ws = new WebSocket(wsUrl);
+                
+                ws.onopen = () => {
+                    console.log('✓ WebSocket connected');
+                    isConnected = true;
+                    reconnectAttempts = 0;
+                    updateStatus('connected');
+                    document.getElementById('wsStatus').textContent = '🟢 Đã kết nối';
+                    document.getElementById('webhookUrl').textContent = serverUrl + '/webhook';
+                    speakVietnamese('Đã kết nối thành công');
+                };
+                
+                ws.onmessage = (event) => {
+                    try {
+                        const message = JSON.parse(event.data);
+                        console.log('Nhận message:', message);
+                        
+                        if (message.type === 'transaction') {
+                            handleTransaction(message.data);
+                        }
+                    } catch (error) {
+                        console.error('Lỗi parse message:', error);
+                    }
+                };
+                
+                ws.onerror = (error) => {
+                    console.error('WebSocket error:', error);
+                    updateStatus('error');
+                    document.getElementById('wsStatus').textContent = '🔴 Lỗi kết nối - Kiểm tra URL hoặc server có đang chạy?';
+                };
+                
+                ws.onclose = (event) => {
+                    console.log('WebSocket closed:', event.code, event.reason);
+                    isConnected = false;
+                    
+                    if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS && !event.wasClean) {
+                        reconnectAttempts++;
+                        document.getElementById('wsStatus').textContent = `🟡 Thử kết nối lại... (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`;
+                        setTimeout(() => connect(), 3000);
+                    } else {
+                        updateStatus('disconnected');
+                        document.getElementById('wsStatus').textContent = '⚪ Đã ngắt kết nối';
+                    }
+                };
+                
+            } catch (error) {
+                console.error('Lỗi tạo WebSocket:', error);
                 updateStatus('error');
-                document.getElementById('wsStatus').textContent = '🔴 Lỗi kết nối';
-            };
-            
-            ws.onclose = () => {
-                isConnected = false;
-                updateStatus('disconnected');
-                document.getElementById('wsStatus').textContent = '⚪ Đã ngắt kết nối';
-            };
+                document.getElementById('wsStatus').textContent = '🔴 Lỗi: ' + error.message;
+            }
         }
 
         function disconnect() {
@@ -329,6 +381,7 @@
                 ws = null;
             }
             isConnected = false;
+            reconnectAttempts = 0;
             updateStatus('disconnected');
         }
 
@@ -336,13 +389,22 @@
             const indicator = document.getElementById('statusIndicator');
             const btn = document.getElementById('toggleBtn');
             
-            if (status === 'connected') {
+            if (status === 'connecting') {
+                indicator.innerHTML = `
+                    <div class="w-3 h-3 rounded-full bg-yellow-500 animate-pulse"></div>
+                    <span class="font-medium text-yellow-700">Đang kết nối...</span>
+                `;
+                indicator.className = 'flex items-center gap-2 px-4 py-2 rounded-lg bg-yellow-100';
+                btn.disabled = true;
+                btn.className = 'px-6 py-3 rounded-xl font-semibold bg-gray-400 text-white cursor-not-allowed';
+            } else if (status === 'connected') {
                 indicator.innerHTML = `
                     <div class="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
                     <span class="font-medium text-green-700">Đang hoạt động</span>
                 `;
                 indicator.className = 'flex items-center gap-2 px-4 py-2 rounded-lg bg-green-100';
                 btn.textContent = 'Dừng lại';
+                btn.disabled = false;
                 btn.className = 'px-6 py-3 rounded-xl font-semibold bg-red-500 hover:bg-red-600 text-white transition-all';
             } else if (status === 'error') {
                 indicator.innerHTML = `
@@ -351,6 +413,7 @@
                 `;
                 indicator.className = 'flex items-center gap-2 px-4 py-2 rounded-lg bg-red-100';
                 btn.textContent = 'Thử lại';
+                btn.disabled = false;
                 btn.className = 'px-6 py-3 rounded-xl font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition-all';
             } else {
                 indicator.innerHTML = `
@@ -359,6 +422,7 @@
                 `;
                 indicator.className = 'flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-200';
                 btn.textContent = 'Bắt đầu';
+                btn.disabled = false;
                 btn.className = 'px-6 py-3 rounded-xl font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition-all';
             }
         }
@@ -381,7 +445,6 @@
             
             renderTransactions();
             
-            // Chuyển số thành chữ tiếng Việt
             const amountInWords = numberToVietnamese(amount);
             const message = `Bạn vừa nhận được số tiền ${amountInWords} đồng`;
             
@@ -419,6 +482,14 @@
                 renderTransactions();
             }
         }
+
+        // Auto-connect on page load if URL is set
+        window.addEventListener('load', () => {
+            const serverUrl = document.getElementById('serverUrl').value;
+            if (serverUrl && serverUrl !== 'https://sepay-notifier.onrender.com') {
+                console.log('URL đã được cấu hình, có thể tự động kết nối');
+            }
+        });
     </script>
 </body>
 </html>
