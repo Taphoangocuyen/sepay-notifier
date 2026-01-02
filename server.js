@@ -1,13 +1,16 @@
 const express = require('express');
 const cors = require('cors');
 const WebSocket = require('ws');
+const http = require('http');
+
 const app = express();
+const server = http.createServer(app);
 
 app.use(cors());
 app.use(express.json());
 
-// WebSocket Server
-const wss = new WebSocket.Server({ port: 8080 });
+// WebSocket Server - Chạy trên cùng port với HTTP
+const wss = new WebSocket.Server({ server });
 
 wss.on('connection', (ws) => {
     console.log('✓ Client kết nối WebSocket');
@@ -38,18 +41,21 @@ app.post('/webhook', (req, res) => {
 app.get('/', (req, res) => {
     res.send(`
         <h1>Sepay Server đang chạy! ✓</h1>
-        <p>Webhook URL: <code>http://localhost:3000/webhook</code></p>
-        <p>WebSocket: <code>ws://localhost:8080</code></p>
+        <p>Webhook URL: <code>${req.protocol}://${req.get('host')}/webhook</code></p>
+        <p>WebSocket: <code>wss://${req.get('host')}</code></p>
+        <p>Clients đang kết nối: ${wss.clients.size}</p>
     `);
 });
 
-const PORT = 3000;
-app.listen(PORT, () => {
+// Sử dụng PORT từ environment variable (Render yêu cầu)
+const PORT = process.env.PORT || 3000;
+
+server.listen(PORT, () => {
     console.log('╔════════════════════════════════╗');
     console.log('║   SEPAY VOICE NOTIFIER SERVER  ║');
     console.log('╠════════════════════════════════╣');
-    console.log(`║ HTTP:      http://localhost:${PORT}   ║`);
-    console.log('║ WebSocket: ws://localhost:8080 ║');
-    console.log(`║ Webhook:   /webhook            ║`);
+    console.log(`║ PORT:      ${PORT}                 ║`);
+    console.log('║ WebSocket: Same port as HTTP   ║');
+    console.log('║ Webhook:   /webhook            ║');
     console.log('╚════════════════════════════════╝');
 });
