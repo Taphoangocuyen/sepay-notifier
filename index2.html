@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sepay Voice Notifier - Google TTS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen p-8">
+    <div class="max-w-6xl mx-auto">
+        <div class="bg-white rounded-2xl shadow-xl p-8">
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center gap-3">
+                    <div class="bg-indigo-600 p-3 rounded-xl">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-800">Sepay Voice Notifier</h1>
+                        <p class="text-gray-500">Giọng nói tiếng Việt với Google Translate</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div id="statusIndicator" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-200">
+                        <div class="w-3 h-3 rounded-full bg-gray-400"></div>
+                        <span class="font-medium text-gray-700">Chưa kết nối</span>
+                    </div>
+                    <button id="toggleBtn" onclick="toggleConnection()" 
+                            class="px-6 py-3 rounded-xl font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition-all">
+                        Bắt đầu
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Content Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <!-- Settings Panel -->
+                <div class="bg-indigo-50 rounded-xl p-6">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        Cài đặt
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-green-50 border-l-4 border-green-400 p-4">
+                            <p class="text-sm font-semibold text-green-800 mb-1">✅ Giọng nói tiếng Việt</p>
+                            <p class="text-xs text-green-700">Sử dụng Google Translate TTS - Không cần cài đặt!</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Âm lượng: <span id="volumeValue">100</span>%
+                            </label>
+                            <input type="range" id="volumeSlider" min="0" max="100" value="100" 
+                                   class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Tốc độ đọc: <span id="rateValue">1.0</span>x
+                            </label>
+                            <input type="range" id="rateSlider" min="0.5" max="2" step="0.1" value="1" 
+                                   class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                URL Backend Server
+                            </label>
+                            <input type="text" id="serverUrl" value="http://localhost:3000" 
+                                   placeholder="http://localhost:3000"
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                        </div>
+
+                        <button onclick="testVoice()" 
+                                class="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors">
+                            🔊 Test giọng đọc
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Server Info Panel -->
+                <div class="bg-green-50 rounded-xl p-6">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4">Thông tin kết nối</h2>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-white rounded-lg p-4 border border-green-200">
+                            <p class="text-sm font-medium text-gray-700 mb-2">Webhook URL cho Sepay:</p>
+                            <code id="webhookUrl" class="block text-sm text-gray-600 break-all bg-gray-50 p-3 rounded">
+                                Chưa có (Khởi động server trước)
+                            </code>
+                        </div>
+
+                        <div class="bg-white rounded-lg p-4 border border-green-200">
+                            <p class="text-sm font-medium text-gray-700 mb-2">Trạng thái WebSocket:</p>
+                            <p id="wsStatus" class="text-sm text-gray-600">⚪ Chưa kết nối</p>
+                        </div>
+
+                        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+                            <p class="text-sm font-semibold text-yellow-800 mb-2">📝 Hướng dẫn:</p>
+                            <ol class="text-xs text-yellow-700 space-y-1 list-decimal list-inside">
+                                <li>Chạy server: <code class="bg-yellow-100 px-1">node server.js</code></li>
+                                <li>Nhấn "Bắt đầu" ở trên</li>
+                                <li>Test giọng đọc tiếng Việt</li>
+                                <li>Copy Webhook URL vào Sepay</li>
+                                <li>Giữ tab này mở</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transaction History -->
+            <div class="bg-gray-50 rounded-xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Lịch sử giao dịch
+                    </h2>
+                    <button onclick="clearHistory()" class="text-sm text-red-600 hover:text-red-700">
+                        Xóa lịch sử
+                    </button>
+                </div>
+                
+                <div id="transactionList" class="space-y-3">
+                    <p class="text-gray-500 text-center py-8">Chưa có giao dịch nào</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Banner -->
+        <div class="mt-8 bg-blue-50 border-l-4 border-blue-400 p-6 rounded-lg">
+            <h3 class="font-semibold text-blue-800 mb-2">💡 Về giọng đọc Google Translate</h3>
+            <ul class="text-sm text-blue-700 space-y-1">
+                <li>✅ Giọng nói tiếng Việt tự nhiên, không cần cài đặt</li>
+                <li>✅ Hoạt động trên mọi trình duyệt và hệ điều hành</li>
+                <li>✅ Cần kết nối internet để phát giọng nói</li>
+                <li>⚠️ Có độ trễ nhỏ khi tải audio từ Google (1-2 giây)</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+        let isConnected = false;
+        let transactions = [];
+        let audioQueue = [];
+        let isPlaying = false;
+
+        // Volume and rate sliders
+        document.getElementById('volumeSlider').addEventListener('input', (e) => {
+            document.getElementById('volumeValue').textContent = e.target.value;
+        });
+
+        document.getElementById('rateSlider').addEventListener('input', (e) => {
+            document.getElementById('rateValue').textContent = parseFloat(e.target.value).toFixed(1);
+        });
+
+        // Chuyển đổi số thành chữ tiếng Việt
+        function numberToVietnamese(num) {
+            if (num === 0) return 'không';
+            
+            const ones = ['', 'một', 'hai', 'ba', 'bốn', 'năm', 'sáu', 'bảy', 'tám', 'chín'];
+            const teens = ['mười', 'mười một', 'mười hai', 'mười ba', 'mười bốn', 'mười lăm', 'mười sáu', 'mười bảy', 'mười tám', 'mười chín'];
+            
+            function convertUnderThousand(n) {
+                if (n === 0) return '';
+                if (n < 10) return ones[n];
+                if (n < 20) return teens[n - 10];
+                
+                const hundred = Math.floor(n / 100);
+                const remainder = n % 100;
+                const ten = Math.floor(remainder / 10);
+                const one = remainder % 10;
+                
+                let result = '';
+                
+                if (hundred > 0) {
+                    result += ones[hundred] + ' trăm';
+                    if (remainder > 0 && remainder < 10) result += ' lẻ';
+                }
+                
+                if (ten > 1) {
+                    result += (result ? ' ' : '') + ones[ten] + ' mươi';
+                    if (one === 5) {
+                        result += ' lăm';
+                    } else if (one > 0) {
+                        result += ' ' + ones[one];
+                    }
+                } else if (ten === 1) {
+                    result += (result ? ' ' : '') + 'mười';
+                    if (one === 5) {
+                        result += ' lăm';
+                    } else if (one > 0) {
+                        result += ' ' + ones[one];
+                    }
+                } else if (one > 0) {
+                    result += (result ? ' ' : '') + ones[one];
+                }
+                
+                return result.trim();
+            }
+            
+            if (num < 1000) {
+                return convertUnderThousand(num);
+            }
+            
+            const billion = Math.floor(num / 1000000000);
+            const million = Math.floor((num % 1000000000) / 1000000);
+            const thousand = Math.floor((num % 1000000) / 1000);
+            const remainder = num % 1000;
+            
+            let result = '';
+            
+            if (billion > 0) {
+                result += convertUnderThousand(billion) + ' tỷ';
+            }
+            
+            if (million > 0) {
+                result += (result ? ' ' : '') + convertUnderThousand(million) + ' triệu';
+            }
+            
+            if (thousand > 0) {
+                result += (result ? ' ' : '') + convertUnderThousand(thousand) + ' ngàn';
+            }
+            
+            if (remainder > 0) {
+                if (result && remainder < 100) {
+                    result += ' lẻ';
+                }
+                result += (result ? ' ' : '') + convertUnderThousand(remainder);
+            }
+            
+            return result.trim();
+        }
+
+        // Google Translate TTS function
+        function speakVietnamese(text) {
+            const volume = document.getElementById('volumeSlider').value / 100;
+            const rate = parseFloat(document.getElementById('rateSlider').value);
+            
+            // Encode text for URL
+            const encodedText = encodeURIComponent(text);
+            
+            // Google Translate TTS URL
+            const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=vi&client=tw-ob&q=${encodedText}`;
+            
+            // Create and play audio
+            const audio = new Audio(audioUrl);
+            audio.volume = volume;
+            audio.playbackRate = rate;
+            
+            audio.play().catch(error => {
+                console.error('Lỗi phát giọng nói:', error);
+                // Fallback: Try with browser TTS
+                fallbackSpeak(text);
+            });
+            
+            return audio;
+        }
+
+        // Fallback to browser TTS if Google fails
+        function fallbackSpeak(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'vi-VN';
+                utterance.volume = document.getElementById('volumeSlider').value / 100;
+                utterance.rate = parseFloat(document.getElementById('rateSlider').value);
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function testVoice() {
+            speakVietnamese('Bạn vừa nhận được số tiền năm trăm ngàn đồng');
+        }
+
+        function toggleConnection() {
+            if (isConnected) {
+                disconnect();
+            } else {
+                connect();
+            }
+        }
+
+        function connect() {
+            const serverUrl = document.getElementById('serverUrl').value;
+            const wsUrl = serverUrl.replace('http://', 'ws://').replace('https://', 'wss://').replace(':3000', ':8080');
+            
+            ws = new WebSocket(wsUrl);
+            
+            ws.onopen = () => {
+                isConnected = true;
+                updateStatus('connected');
+                document.getElementById('wsStatus').textContent = '🟢 Đã kết nối';
+                document.getElementById('webhookUrl').textContent = serverUrl + '/webhook';
+                speakVietnamese('Đã kết nối thành công');
+            };
+            
+            ws.onmessage = (event) => {
+                const message = JSON.parse(event.data);
+                if (message.type === 'transaction') {
+                    handleTransaction(message.data);
+                }
+            };
+            
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+                updateStatus('error');
+                document.getElementById('wsStatus').textContent = '🔴 Lỗi kết nối';
+            };
+            
+            ws.onclose = () => {
+                isConnected = false;
+                updateStatus('disconnected');
+                document.getElementById('wsStatus').textContent = '⚪ Đã ngắt kết nối';
+            };
+        }
+
+        function disconnect() {
+            if (ws) {
+                ws.close();
+                ws = null;
+            }
+            isConnected = false;
+            updateStatus('disconnected');
+        }
+
+        function updateStatus(status) {
+            const indicator = document.getElementById('statusIndicator');
+            const btn = document.getElementById('toggleBtn');
+            
+            if (status === 'connected') {
+                indicator.innerHTML = `
+                    <div class="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
+                    <span class="font-medium text-green-700">Đang hoạt động</span>
+                `;
+                indicator.className = 'flex items-center gap-2 px-4 py-2 rounded-lg bg-green-100';
+                btn.textContent = 'Dừng lại';
+                btn.className = 'px-6 py-3 rounded-xl font-semibold bg-red-500 hover:bg-red-600 text-white transition-all';
+            } else if (status === 'error') {
+                indicator.innerHTML = `
+                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                    <span class="font-medium text-red-700">Lỗi kết nối</span>
+                `;
+                indicator.className = 'flex items-center gap-2 px-4 py-2 rounded-lg bg-red-100';
+                btn.textContent = 'Thử lại';
+                btn.className = 'px-6 py-3 rounded-xl font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition-all';
+            } else {
+                indicator.innerHTML = `
+                    <div class="w-3 h-3 rounded-full bg-gray-400"></div>
+                    <span class="font-medium text-gray-700">Chưa kết nối</span>
+                `;
+                indicator.className = 'flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-200';
+                btn.textContent = 'Bắt đầu';
+                btn.className = 'px-6 py-3 rounded-xl font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition-all';
+            }
+        }
+
+        function handleTransaction(data) {
+            const amount = data.amount || data.transferAmount || 0;
+            const content = data.content || data.description || 'Không có nội dung';
+            const sender = data.account_name || data.accountName || 'Không rõ';
+            
+            const transaction = {
+                id: Date.now(),
+                amount: amount,
+                content: content,
+                sender: sender,
+                time: new Date().toLocaleTimeString('vi-VN')
+            };
+            
+            transactions.unshift(transaction);
+            if (transactions.length > 10) transactions.pop();
+            
+            renderTransactions();
+            
+            // Chuyển số thành chữ tiếng Việt
+            const amountInWords = numberToVietnamese(amount);
+            const message = `Bạn vừa nhận được số tiền ${amountInWords} đồng`;
+            
+            speakVietnamese(message);
+        }
+
+        function renderTransactions() {
+            const list = document.getElementById('transactionList');
+            if (transactions.length === 0) {
+                list.innerHTML = '<p class="text-gray-500 text-center py-8">Chưa có giao dịch nào</p>';
+                return;
+            }
+            
+            list.innerHTML = transactions.map(t => `
+                <div class="bg-white rounded-lg p-4 border border-gray-200 hover:shadow-md transition-shadow">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-2xl font-bold text-green-600">
+                            ${t.amount.toLocaleString('vi-VN')} ₫
+                        </span>
+                        <span class="text-sm text-gray-500">${t.time}</span>
+                    </div>
+                    <p class="text-sm text-gray-700 mb-1">
+                        <strong>Từ:</strong> ${t.sender}
+                    </p>
+                    <p class="text-sm text-gray-600">
+                        <strong>Nội dung:</strong> ${t.content}
+                    </p>
+                </div>
+            `).join('');
+        }
+
+        function clearHistory() {
+            if (confirm('Bạn có chắc muốn xóa lịch sử?')) {
+                transactions = [];
+                renderTransactions();
+            }
+        }
+    </script>
+</body>
+</html>
