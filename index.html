@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sepay Voice Notifier</title>
+    <title>Sepay Voice Notifier - Google TTS</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen p-8">
@@ -19,7 +19,7 @@
                     </div>
                     <div>
                         <h1 class="text-3xl font-bold text-gray-800">Sepay Voice Notifier</h1>
-                        <p class="text-gray-500">Thông báo giọng nói qua trình duyệt</p>
+                        <p class="text-gray-500">Giọng nói tiếng Việt với Google Translate</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
@@ -47,13 +47,9 @@
                     </h2>
                     
                     <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Giọng đọc
-                            </label>
-                            <select id="voiceSelect" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                                <option>Đang tải giọng đọc...</option>
-                            </select>
+                        <div class="bg-green-50 border-l-4 border-green-400 p-4">
+                            <p class="text-sm font-semibold text-green-800 mb-1">✅ Giọng nói tiếng Việt</p>
+                            <p class="text-xs text-green-700">Sử dụng Google Translate TTS - Không cần cài đặt!</p>
                         </div>
 
                         <div>
@@ -79,7 +75,6 @@
                             <input type="text" id="serverUrl" value="http://localhost:3000" 
                                    placeholder="http://localhost:3000"
                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                            <p class="text-xs text-gray-500 mt-1">Địa chỉ server Node.js nhận webhook</p>
                         </div>
 
                         <button onclick="testVoice()" 
@@ -109,11 +104,11 @@
                         <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
                             <p class="text-sm font-semibold text-yellow-800 mb-2">📝 Hướng dẫn:</p>
                             <ol class="text-xs text-yellow-700 space-y-1 list-decimal list-inside">
-                                <li>Tải file server (hướng dẫn bên dưới)</li>
-                                <li>Chạy: <code class="bg-yellow-100 px-1">node server.js</code></li>
-                                <li>Nhấn nút "Bắt đầu" ở trên</li>
+                                <li>Chạy server: <code class="bg-yellow-100 px-1">node server.js</code></li>
+                                <li>Nhấn "Bắt đầu" ở trên</li>
+                                <li>Test giọng đọc tiếng Việt</li>
                                 <li>Copy Webhook URL vào Sepay</li>
-                                <li>Giữ tab này mở để nhận thông báo</li>
+                                <li>Giữ tab này mở</li>
                             </ol>
                         </div>
                     </div>
@@ -140,141 +135,150 @@
             </div>
         </div>
 
-        <!-- Installation Guide -->
-        <div class="mt-8 bg-white rounded-2xl shadow-xl p-8">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">📦 Hướng dẫn cài đặt Server</h2>
-            
-            <div class="bg-gray-50 rounded-xl p-6 mb-6">
-                <h3 class="font-semibold text-gray-800 mb-3">Bước 1: Tạo file server.js</h3>
-                <pre class="bg-gray-900 text-green-400 p-4 rounded-lg overflow-x-auto text-sm"><code>const express = require('express');
-const cors = require('cors');
-const WebSocket = require('ws');
-const app = express();
-
-app.use(cors());
-app.use(express.json());
-
-// WebSocket Server
-const wss = new WebSocket.Server({ port: 8080 });
-
-wss.on('connection', (ws) => {
-    console.log('✓ Client kết nối WebSocket');
-    ws.send(JSON.stringify({ type: 'connected' }));
-});
-
-// Webhook endpoint cho Sepay
-app.post('/webhook', (req, res) => {
-    console.log('✓ Nhận webhook từ Sepay:', req.body);
-    
-    // Gửi đến tất cả clients đang kết nối
-    wss.clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify({
-                type: 'transaction',
-                data: req.body
-            }));
-        }
-    });
-    
-    res.json({ status: 'success' });
-});
-
-app.get('/', (req, res) => {
-    res.send('Sepay Server đang chạy! ✓');
-});
-
-app.listen(3000, () => {
-    console.log('=== SEPAY SERVER ===');
-    console.log('HTTP: http://localhost:3000');
-    console.log('WebSocket: ws://localhost:8080');
-    console.log('Webhook: http://localhost:3000/webhook');
-    console.log('====================');
-});</code></pre>
-            </div>
-
-            <div class="bg-gray-50 rounded-xl p-6 mb-6">
-                <h3 class="font-semibold text-gray-800 mb-3">Bước 2: Cài đặt dependencies</h3>
-                <pre class="bg-gray-900 text-green-400 p-4 rounded-lg text-sm"><code>npm install express cors ws</code></pre>
-            </div>
-
-            <div class="bg-gray-50 rounded-xl p-6">
-                <h3 class="font-semibold text-gray-800 mb-3">Bước 3: Chạy server</h3>
-                <pre class="bg-gray-900 text-green-400 p-4 rounded-lg text-sm"><code>node server.js</code></pre>
-            </div>
-
-            <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mt-6">
-                <p class="text-sm font-semibold text-blue-800 mb-2">💡 Để nhận webhook từ Sepay (từ internet):</p>
-                <p class="text-sm text-blue-700 mb-2">Cài đặt Ngrok để tạo URL public:</p>
-                <pre class="bg-white p-3 rounded text-sm"><code>ngrok http 3000</code></pre>
-                <p class="text-xs text-blue-600 mt-2">Sau đó copy URL từ ngrok và thêm /webhook để cấu hình trên Sepay</p>
-            </div>
+        <!-- Info Banner -->
+        <div class="mt-8 bg-blue-50 border-l-4 border-blue-400 p-6 rounded-lg">
+            <h3 class="font-semibold text-blue-800 mb-2">💡 Về giọng đọc Google Translate</h3>
+            <ul class="text-sm text-blue-700 space-y-1">
+                <li>✅ Giọng nói tiếng Việt tự nhiên, không cần cài đặt</li>
+                <li>✅ Hoạt động trên mọi trình duyệt và hệ điều hành</li>
+                <li>✅ Cần kết nối internet để phát giọng nói</li>
+                <li>⚠️ Có độ trễ nhỏ khi tải audio từ Google (1-2 giây)</li>
+            </ul>
         </div>
     </div>
 
     <script>
         let ws = null;
         let isConnected = false;
-        let voices = [];
         let transactions = [];
+        let audioQueue = [];
+        let isPlaying = false;
 
-        // Load voices
-        function loadVoices() {
-            voices = speechSynthesis.getVoices();
-            const voiceSelect = document.getElementById('voiceSelect');
-            voiceSelect.innerHTML = '';
-            
-            const viVoices = voices.filter(v => v.lang.startsWith('vi'));
-            const otherVoices = voices.filter(v => !v.lang.startsWith('vi'));
-            
-            if (viVoices.length > 0) {
-                const group = document.createElement('optgroup');
-                group.label = 'Tiếng Việt';
-                viVoices.forEach((voice, i) => {
-                    const option = document.createElement('option');
-                    option.value = i;
-                    option.textContent = voice.name;
-                    group.appendChild(option);
-                });
-                voiceSelect.appendChild(group);
-            }
-            
-            if (otherVoices.length > 0) {
-                const group = document.createElement('optgroup');
-                group.label = 'Khác';
-                otherVoices.forEach((voice, i) => {
-                    const option = document.createElement('option');
-                    option.value = voices.indexOf(voice);
-                    option.textContent = voice.name + ' (' + voice.lang + ')';
-                    group.appendChild(option);
-                });
-                voiceSelect.appendChild(group);
-            }
-        }
-
-        speechSynthesis.onvoiceschanged = loadVoices;
-        loadVoices();
-
-        // Volume slider
+        // Volume and rate sliders
         document.getElementById('volumeSlider').addEventListener('input', (e) => {
             document.getElementById('volumeValue').textContent = e.target.value;
         });
 
-        // Rate slider
         document.getElementById('rateSlider').addEventListener('input', (e) => {
             document.getElementById('rateValue').textContent = parseFloat(e.target.value).toFixed(1);
         });
 
-        function speak(text) {
-            const utterance = new SpeechSynthesisUtterance(text);
-            const voiceIndex = document.getElementById('voiceSelect').value;
-            utterance.voice = voices[voiceIndex];
-            utterance.volume = document.getElementById('volumeSlider').value / 100;
-            utterance.rate = parseFloat(document.getElementById('rateSlider').value);
-            speechSynthesis.speak(utterance);
+        // Chuyển đổi số thành chữ tiếng Việt
+        function numberToVietnamese(num) {
+            if (num === 0) return 'không';
+            
+            const ones = ['', 'một', 'hai', 'ba', 'bốn', 'năm', 'sáu', 'bảy', 'tám', 'chín'];
+            const teens = ['mười', 'mười một', 'mười hai', 'mười ba', 'mười bốn', 'mười lăm', 'mười sáu', 'mười bảy', 'mười tám', 'mười chín'];
+            
+            function convertUnderThousand(n) {
+                if (n === 0) return '';
+                if (n < 10) return ones[n];
+                if (n < 20) return teens[n - 10];
+                
+                const hundred = Math.floor(n / 100);
+                const remainder = n % 100;
+                const ten = Math.floor(remainder / 10);
+                const one = remainder % 10;
+                
+                let result = '';
+                
+                if (hundred > 0) {
+                    result += ones[hundred] + ' trăm';
+                    if (remainder > 0 && remainder < 10) result += ' lẻ';
+                }
+                
+                if (ten > 1) {
+                    result += (result ? ' ' : '') + ones[ten] + ' mươi';
+                    if (one === 5) {
+                        result += ' lăm';
+                    } else if (one > 0) {
+                        result += ' ' + ones[one];
+                    }
+                } else if (ten === 1) {
+                    result += (result ? ' ' : '') + 'mười';
+                    if (one === 5) {
+                        result += ' lăm';
+                    } else if (one > 0) {
+                        result += ' ' + ones[one];
+                    }
+                } else if (one > 0) {
+                    result += (result ? ' ' : '') + ones[one];
+                }
+                
+                return result.trim();
+            }
+            
+            if (num < 1000) {
+                return convertUnderThousand(num);
+            }
+            
+            const billion = Math.floor(num / 1000000000);
+            const million = Math.floor((num % 1000000000) / 1000000);
+            const thousand = Math.floor((num % 1000000) / 1000);
+            const remainder = num % 1000;
+            
+            let result = '';
+            
+            if (billion > 0) {
+                result += convertUnderThousand(billion) + ' tỷ';
+            }
+            
+            if (million > 0) {
+                result += (result ? ' ' : '') + convertUnderThousand(million) + ' triệu';
+            }
+            
+            if (thousand > 0) {
+                result += (result ? ' ' : '') + convertUnderThousand(thousand) + ' ngàn';
+            }
+            
+            if (remainder > 0) {
+                if (result && remainder < 100) {
+                    result += ' lẻ';
+                }
+                result += (result ? ' ' : '') + convertUnderThousand(remainder);
+            }
+            
+            return result.trim();
+        }
+
+        // Google Translate TTS function
+        function speakVietnamese(text) {
+            const volume = document.getElementById('volumeSlider').value / 100;
+            const rate = parseFloat(document.getElementById('rateSlider').value);
+            
+            // Encode text for URL
+            const encodedText = encodeURIComponent(text);
+            
+            // Google Translate TTS URL
+            const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=vi&client=tw-ob&q=${encodedText}`;
+            
+            // Create and play audio
+            const audio = new Audio(audioUrl);
+            audio.volume = volume;
+            audio.playbackRate = rate;
+            
+            audio.play().catch(error => {
+                console.error('Lỗi phát giọng nói:', error);
+                // Fallback: Try with browser TTS
+                fallbackSpeak(text);
+            });
+            
+            return audio;
+        }
+
+        // Fallback to browser TTS if Google fails
+        function fallbackSpeak(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'vi-VN';
+                utterance.volume = document.getElementById('volumeSlider').value / 100;
+                utterance.rate = parseFloat(document.getElementById('rateSlider').value);
+                window.speechSynthesis.speak(utterance);
+            }
         }
 
         function testVoice() {
-            speak('Có giao dịch mới. Số tiền 500 nghìn đồng. Từ Nguyễn Văn A. Nội dung: Test chuyển khoản');
+            speakVietnamese('Bạn vừa nhận được số tiền năm trăm ngàn đồng');
         }
 
         function toggleConnection() {
@@ -296,7 +300,7 @@ app.listen(3000, () => {
                 updateStatus('connected');
                 document.getElementById('wsStatus').textContent = '🟢 Đã kết nối';
                 document.getElementById('webhookUrl').textContent = serverUrl + '/webhook';
-                speak('Đã kết nối thành công');
+                speakVietnamese('Đã kết nối thành công');
             };
             
             ws.onmessage = (event) => {
@@ -377,8 +381,11 @@ app.listen(3000, () => {
             
             renderTransactions();
             
-            const message = `Có giao dịch mới. Số tiền ${amount.toLocaleString('vi-VN')} đồng. Từ ${sender}. Nội dung: ${content}`;
-            speak(message);
+            // Chuyển số thành chữ tiếng Việt
+            const amountInWords = numberToVietnamese(amount);
+            const message = `Bạn vừa nhận được số tiền ${amountInWords} đồng`;
+            
+            speakVietnamese(message);
         }
 
         function renderTransactions() {
