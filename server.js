@@ -38,13 +38,12 @@ app.post('/webhook', (req, res) => {
     res.json({ status: 'success', received: true });
 });
 
+const path = require('path');
+
+app.use(express.static(__dirname));
+
 app.get('/', (req, res) => {
-    res.send(`
-        <h1>Sepay Server đang chạy! ✓</h1>
-        <p>Webhook URL: <code>${req.protocol}://${req.get('host')}/webhook</code></p>
-        <p>WebSocket: <code>wss://${req.get('host')}</code></p>
-        <p>Clients đang kết nối: ${wss.clients.size}</p>
-    `);
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // Sử dụng PORT từ environment variable (Render yêu cầu)
